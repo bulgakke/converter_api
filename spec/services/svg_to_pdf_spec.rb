@@ -4,10 +4,32 @@ RSpec.describe SVGToPDF do
   describe ".call" do
     subject(:result) { SVGToPDF.call(svg_content) }
 
-    let(:svg_content) { "asdf" }
+    context "with valid SVG" do
+      let(:svg_content) { File.read("spec/fixtures/base.svg") }
 
-    it "returns a blob" do
-      expect(result).to be_a(String)
+      before {
+        # Watermark is randomly rotated, fix rand for tests
+        allow_any_instance_of(SVGToPDF).to receive(:random_angle).and_return(0)
+      }
+
+      it "forms expected SVG" do
+        expect(result.svg).to eq File.read("spec/fixtures/result.svg")
+      end
+
+      it "converts to PDF" do
+        expect(result.pdf).to be_a(String)
+
+        # Quick check, PDFs are hard to verify
+        expect(result.pdf.start_with?("%PDF-")).to be true
+      end
+    end
+
+    context "with invalid SVG" do
+      let(:svg_content) { File.read("spec/fixtures/invalid.svg") }
+
+      it "returns nil" do
+        expect(result).to be_nil
+      end
     end
   end
 end
