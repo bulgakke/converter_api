@@ -58,44 +58,58 @@ class SVGToPDF
   # @param svg_content [String] SVG as string
   # @return [String] PDF binary
   def self.call(svg_content)
-    new(svg_content).call
+    new(svg_content).convert!
   end
 
   def initialize(svg_content)
     @document = Nokogiri::XML(svg_content)
   end
 
-  def call
+  def convert!
+    if svg_node.blank? || @document.errors.any?
+      return nil
+    end
+
     add_crop_marks!
     add_padding_and_margins!
     resize!
     add_watermark!
 
-    format_to_pdf
+    self
   end
 
-  def to_s
-    @document.to_s
+  def pdf
+    @pdf ||= MiniMagick::Image.read(@document.to_s)
+      .format("pdf")
+      .to_blob
+  end
+
+  def svg
+    @svg ||= @document.to_s
   end
 
   private
 
-  def svg
+  def random_angle
+    rand(-15..15)
+  end
+
+  def svg_node
     @document.at_css("svg")
   end
 
   def viewbox
-    @viewbox ||= ViewBox.new(svg["viewBox"], PADDING, MARGIN)
+    @viewbox ||= ViewBox.new(svg_node["viewBox"], PADDING, MARGIN)
   end
 
   def add_crop_marks!
     rectangle = build_rectangle_for_crop_marks(*viewbox.with_padding)
 
-    svg.add_child(rectangle)
+    svg_node.add_child(rectangle)
   end
 
   def add_padding_and_margins!
-    svg["viewBox"] = viewbox.with_padding_and_margins.join(" ")
+    svg_node["viewBox"] = viewbox.with_padding_and_margins.join(" ")
   end
 
   def build_rectangle_for_crop_marks(x, y, width, height)
@@ -113,12 +127,12 @@ class SVGToPDF
   def add_watermark!
     group = Nokogiri::XML::Node.new("g", @document)
     group["opacity"] = "0.25"
-    group["transform"] = "translate(20, 20) rotate(#{rand(-15..15)}, 50, 25)"
+    group["transform"] = "translate(20, 20) rotate(#{random_angle}, 50, 25)"
 
     group.add_child(build_rectangle_for_watermark)
     group.add_child(build_text_for_watermark)
 
-    svg.add_child(group)
+    svg_node.add_child(group)
   end
 
   def build_rectangle_for_watermark
@@ -148,14 +162,8 @@ class SVGToPDF
   end
 
   def resize!
-    size = Size.new(svg["width"], svg["height"])
-    svg["height"] = size.new_height
-    svg["width"] = size.new_width
-  end
-
-  def format_to_pdf
-    MiniMagick::Image.read(@document.to_s)
-      .format("pdf")
-      .to_blob
+    size = Size.new(svg_node["width"], svg_node["height"])
+    svg_node["height"] = size.new_height
+    svg_node["width"] = size.new_width
   end
 end
