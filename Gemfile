@@ -50,3 +50,5 @@ group :development, :test do
 end
 
 gem "rswag"
+
+gem "mini_magick"
