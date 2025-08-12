@@ -1,6 +1,62 @@
 require 'rails_helper'
 
 RSpec.describe Document, type: :model do
+  describe ".find_duplicate_or_initialize_by" do
+    subject(:result) { Document.find_duplicate_or_initialize_by(svg_content:) }
+
+    let(:svg_content) { "asdf" }
+
+    context "when there is no document with the same SVG" do
+      it "returns a new document with passed attributes" do
+        expect(result).to be_a(Document)
+        expect(result.persisted?).to be false
+        expect(result.svg_content).to eq svg_content
+      end
+    end
+
+    context "when there is a document with the same SVG" do
+      let!(:document) { Document.create(svg_content:) }
+
+      it "returns the document" do
+        expect(result).to eq document
+        expect(result.persisted?).to be true
+      end
+    end
+  end
+
+  describe "#generate_pdf_and_save" do
+    let(:document) { Document.new(svg_content:) }
+
+    context "with valid SVG" do
+      let(:svg_content) { File.read("spec/fixtures/base.svg") }
+      let(:service_call) { instance_double(SVGToPDF, pdf: "pdf") }
+
+      before {
+        allow(SVGToPDF).to receive(:call).and_return(service_call)
+      }
+
+      it "saves document, attaches PDF and returns true" do
+        expect(document.generate_pdf_and_save).to be true
+        expect(document.pdf_file.attached?).to be true
+        expect(document.persisted?).to be true
+      end
+    end
+
+    context "with invalid SVG" do
+      let(:svg_content) { File.read("spec/fixtures/invalid.svg") }
+
+      before {
+        allow(SVGToPDF).to receive(:call).and_return(nil)
+      }
+
+      it "does not save document, does not attach PDF and returns false" do
+        expect(document.generate_pdf_and_save).to be false
+        expect(document.pdf_file.attached?).to be false
+        expect(document.persisted?).to be false
+      end
+    end
+  end
+
   describe "validations" do
     let(:document) { Document.new(svg_content:) }
 
