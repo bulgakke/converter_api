@@ -5,7 +5,7 @@ RSpec.describe SVGToPDF do
     subject(:result) { SVGToPDF.call(svg_content) }
 
     context "with valid SVG" do
-      let(:svg_content) { File.read("spec/fixtures/base.svg") }
+      let(:svg_content) { File.read("spec/fixtures/files/base.svg") }
 
       before {
         # Watermark is randomly rotated, fix rand for tests
@@ -13,7 +13,7 @@ RSpec.describe SVGToPDF do
       }
 
       it "forms expected SVG" do
-        expect(result.svg).to eq File.read("spec/fixtures/result.svg")
+        expect(result.svg).to eq File.read("spec/fixtures/files/result.svg")
       end
 
       it "converts to PDF" do
@@ -25,7 +25,7 @@ RSpec.describe SVGToPDF do
     end
 
     context "with invalid SVG" do
-      let(:svg_content) { File.read("spec/fixtures/invalid.svg") }
+      let(:svg_content) { File.read("spec/fixtures/files/invalid.svg") }
 
       it "returns nil" do
         expect(result).to be_nil

@@ -15,7 +15,7 @@ RSpec.describe Document, type: :model do
     end
 
     context "when there is a document with the same SVG" do
-      let!(:document) { Document.create(svg_content:) }
+      let!(:document) { create(:document, svg_content:) }
 
       it "returns the document" do
         expect(result).to eq document
@@ -25,10 +25,10 @@ RSpec.describe Document, type: :model do
   end
 
   describe "#generate_pdf_and_save" do
-    let(:document) { Document.new(svg_content:) }
+    let(:document) { build(:document, svg_content:) }
 
     context "with valid SVG" do
-      let(:svg_content) { File.read("spec/fixtures/base.svg") }
+      let(:svg_content) { File.read("spec/fixtures/files/base.svg") }
       let(:service_call) { instance_double(SVGToPDF, pdf: "pdf") }
 
       before {
@@ -43,7 +43,7 @@ RSpec.describe Document, type: :model do
     end
 
     context "with invalid SVG" do
-      let(:svg_content) { File.read("spec/fixtures/invalid.svg") }
+      let(:svg_content) { File.read("spec/fixtures/files/invalid.svg") }
 
       before {
         allow(SVGToPDF).to receive(:call).and_return(nil)
@@ -58,7 +58,7 @@ RSpec.describe Document, type: :model do
   end
 
   describe "validations" do
-    let(:document) { Document.new(svg_content:) }
+    let(:document) { build(:document, svg_content:) }
 
     context "without svg_content" do
       let(:svg_content) { "" }
@@ -69,7 +69,7 @@ RSpec.describe Document, type: :model do
     end
 
     context "with any text as svg_content" do
-      let(:svg_content) { File.read("spec/fixtures/invalid.svg") }
+      let(:svg_content) { File.read("spec/fixtures/files/invalid.svg") }
 
       it "is valid" do
         expect(document).to be_valid
