@@ -1,5 +1,9 @@
 require "active_support/core_ext/integer/time"
 
+Rails.application.default_url_options = {
+  host: "https://beyonder.lol"
+}
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 

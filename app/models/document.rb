@@ -42,7 +42,7 @@ class Document < ApplicationRecord
     end
 
     ActiveRecord::Base.transaction do
-      pdf_file.attach(io: StringIO.new(result.pdf), filename: "#{DateTime.now}.pdf", content_type: "application/pdf")
+      pdf_file.attach(io: StringIO.new(result.pdf), filename: "#{DateTime.now.utc.iso8601}.pdf", content_type: "application/pdf")
       return save
     end
   end
