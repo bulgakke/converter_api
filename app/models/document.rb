@@ -37,7 +37,7 @@ class Document < ApplicationRecord
     result = SVGToPDF.call(svg_content)
 
     if result.nil?
-      errors.add(:svg_content, "is invalid")
+      errors.add(:svg_content, "not a valid SVG file")
       return false
     end
 
