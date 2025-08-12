@@ -25,8 +25,35 @@ class SVGToPDF
     end
   end
 
+  class Size
+    MAX_SIZE = 1000
+
+    attr_reader :new_width, :new_height
+
+    def initialize(width, height)
+      @width = width.to_f
+      @height = height.to_f
+      resize!
+    end
+
+    def h_w_ratio
+      @height / @width
+    end
+
+    def resize!
+      if h_w_ratio > 1
+        @new_height = MAX_SIZE
+        @new_width = @new_height / h_w_ratio
+      else
+        @new_width = MAX_SIZE
+        @new_height = @new_width * h_w_ratio
+      end
+    end
+  end
+
   PADDING = 100
   MARGIN = 100
+  WATERMARK_TEXT = "github.com/bulgakke".freeze
 
   # @param svg_content [String] SVG as string
   # @return [String] PDF binary
@@ -41,6 +68,7 @@ class SVGToPDF
   def call
     add_crop_marks!
     add_padding_and_margins!
+    resize!
     add_watermark!
 
     format_to_pdf
@@ -61,7 +89,7 @@ class SVGToPDF
   end
 
   def add_crop_marks!
-    rectangle = build_rectangle(*viewbox.with_padding)
+    rectangle = build_rectangle_for_crop_marks(*viewbox.with_padding)
 
     svg.add_child(rectangle)
   end
@@ -70,7 +98,7 @@ class SVGToPDF
     svg["viewBox"] = viewbox.with_padding_and_margins.join(" ")
   end
 
-  def build_rectangle(x, y, width, height)
+  def build_rectangle_for_crop_marks(x, y, width, height)
     rect = Nokogiri::XML::Node.new("rect", @document)
     rect["x"] = x
     rect["y"] = y
@@ -83,7 +111,46 @@ class SVGToPDF
   end
 
   def add_watermark!
-    # TODO
+    group = Nokogiri::XML::Node.new("g", @document)
+    group["opacity"] = "0.25"
+    group["transform"] = "translate(20, 20) rotate(#{rand(-15..15)}, 50, 25)"
+
+    group.add_child(build_rectangle_for_watermark)
+    group.add_child(build_text_for_watermark)
+
+    svg.add_child(group)
+  end
+
+  def build_rectangle_for_watermark
+    rect = Nokogiri::XML::Node.new("rect", @document)
+    rect["x"] = "0"
+    rect["y"] = "0"
+    rect["width"] = "200"
+    rect["height"] = "50"
+    rect["rx"] = "10"
+    rect["ry"] = "10"
+    rect["fill"] = "grey"
+    rect["stroke"] = "none"
+    rect
+  end
+
+  def build_text_for_watermark
+    text = Nokogiri::XML::Node.new("text", @document)
+    text.content = WATERMARK_TEXT
+    text["x"] = "100"
+    text["y"] = "30"
+    text["font-family"] = "Arial, sans-serif"
+    text["font-size"] = "20"
+    text["fill"] = "white"
+    text["text-anchor"] = "middle"
+    text["dominant-baseline"] = "middle"
+    text
+  end
+
+  def resize!
+    size = Size.new(svg["width"], svg["height"])
+    svg["height"] = size.new_height
+    svg["width"] = size.new_width
   end
 
   def format_to_pdf

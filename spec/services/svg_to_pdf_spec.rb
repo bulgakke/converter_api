@@ -2,9 +2,8 @@ require "rails_helper"
 
 RSpec.describe SVGToPDF do
   describe ".call" do
-    subject(:result) { SVGToPDF.call(document) }
+    subject(:result) { SVGToPDF.call(svg_content) }
 
-    let(:document) { double(svg_content:) }
     let(:svg_content) { "asdf" }
 
     it "returns a blob" do
