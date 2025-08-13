@@ -5,7 +5,7 @@ class DocumentsController < ApplicationController
     if document.persisted? || document.generate_pdf_and_save
       render json: serialize(document), status: :ok
     else
-      render json: document.errors, status: :unprocessable_content
+      render json: { errors: document.errors }, status: :unprocessable_content
     end
   end
 

@@ -53,7 +53,9 @@ RSpec.describe DocumentsController, type: :controller do
 
         let(:expected_errors) do
           {
-            svg_content: [ "not a valid SVG file" ]
+            errors: {
+              svg_content: [ "not a valid SVG file" ]
+            }
           }
         end
 

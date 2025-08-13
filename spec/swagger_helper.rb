@@ -8,6 +8,20 @@ RSpec.configure do |config|
   # to ensure that it's configured to serve Swagger from the same folder
   config.openapi_root = Rails.root.join('swagger').to_s
 
+  # In spec files, call `after(&save_example)` before `run_test!` to not duplicate this code.
+  # Saves a JSON response example to the generated documentation.
+  def save_example
+    lambda do |example|
+      if response.body.present?
+        example.metadata[:response][:content] = {
+          'application/json' => {
+            example: JSON.parse(response.body, symbolize_names: true)
+          }
+        }
+      end
+    end
+  end
+
   # Define one or more Swagger documents and provide global metadata for each one
   # When you run the 'rswag:specs:swaggerize' rake task, the complete Swagger will
   # be generated at the provided relative path under openapi_root
@@ -24,12 +38,10 @@ RSpec.configure do |config|
       paths: {},
       servers: [
         {
-          url: 'https://{defaultHost}',
-          variables: {
-            defaultHost: {
-              default: 'www.example.com'
-            }
-          }
+          url: 'http://127.0.0.1:3000'
+        },
+        {
+          url: 'https://beyonder.lol'
         }
       ]
     }
