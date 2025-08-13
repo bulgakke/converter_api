@@ -106,7 +106,7 @@ RSpec.describe Document, type: :model do
       end
 
       it "does not break on other types" do
-        expect(Document.normalize_value_for(:svg_content, "1")).to eq("1")
+        expect(Document.normalize_value_for(:svg_content, 1)).to eq("1")
       end
 
       it "leaves nil as nil" do
