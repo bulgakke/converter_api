@@ -1,7 +1,7 @@
 require "active_support/core_ext/integer/time"
 
 Rails.application.default_url_options = {
-  host: "https://beyonder.lol"
+  host: "https://api.convert.beyonder.lol"
 }
 
 Rails.application.configure do
