@@ -45,12 +45,12 @@ group :development, :test do
   gem "factory_bot_rails"
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
+  gem "rspec-rails"
   gem "rubocop-rails-omakase", require: false
   gem "rubocop-rspec", require: false
   gem "rubocop-rspec_rails", require: false
 end
 
-gem "rspec-rails"
 gem "rswag"
 
 gem "mini_magick"
