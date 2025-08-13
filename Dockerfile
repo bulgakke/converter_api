@@ -42,11 +42,10 @@ RUN bundle install && \
 # Copy application code
 COPY . .
 
+RUN RAILS_ENV=test bundle exec rspec spec/requests/ --format Rswag::Specs::SwaggerFormatter
+
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
-
-
-
 
 # Final stage for app image
 FROM base
